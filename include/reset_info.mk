@@ -1,0 +1,3 @@
+NAME=MatchZy
+VERSION=0.8.15
+DEPENDS=
