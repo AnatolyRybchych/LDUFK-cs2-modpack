@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: [self-hosted, Linux, X64]
+
+    container:
+      image: alpine:latest
+      options: --privileged -v /var/run/docker.sock:/var/run/docker.sock
+
+    steps:
+      - name: Install dependencies
+        run: |
+          apk add --no-cache \
+            docker-cli \
+            make \
+            build-base \
+            git
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify Docker access
+        run: docker info
+
+      - name: Build builder image
+        run: docker build -t builder docker/builder
+
+      - name: Run make inside builder container
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            builder \
+            make -C /workspace
