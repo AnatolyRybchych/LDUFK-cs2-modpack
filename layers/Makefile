@@ -35,11 +35,16 @@ $(call MarkFile,download):
 ifneq ($(URL),)
 	curl -L --fail "$(URL)" > "$(DL_DIR)/$(notdir $(URL))"
 endif
+ifeq ($(DIRECTORY),)
 	mkdir -p "$(dir $@)" && touch "$@"
+endif
 
 unpack: download
 ifneq ($(UNPACK),)
 	$(call UnpackArchive,$(UNPACK),$(SOURCES),$(abspath $(DL_DIR)/$(notdir $(URL))))
+endif
+ifneq ($(DIRECTORY),)
+	rm -rf "$(SOURCES)" && cp -rf "$(TOPDIR)/$(DIRECTORY)/$(UNPACKED_DIR)" "$(SOURCES)"
 endif
 
 compile: $(call MarkFile,compile)

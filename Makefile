@@ -20,10 +20,12 @@ $(info $(MAKE) -C layers info 'LAYER=$(1))
 $(shell $(MAKE) -C layers info 'LAYER=$(1)' >/dev/null 2>&1)
 
 $(eval $(file <$(BUILD_DIR)/$(1).info))
-$(eval Layer/$(NAME)=$(1))
-$(eval Layer/$(1)/Name=$(NAME))
-$(eval Layer/$(1)/Version=$(VERSION))
-$(eval Layer/$(1)/Depends=$(DEPENDS))
+$(eval export Layer/$(NAME)=$(1))
+$(eval export Layer/$(1)/Name=$(NAME))
+$(eval export Layer/$(1)/Version=$(VERSION))
+# TODO: calculate the index for each package so idx = ORDER * 1000 + sum(idx(DEPENDS))
+$(eval export Layer/$(1)/Order=$(ORDER))
+$(eval export Layer/$(1)/Depends=$(DEPENDS))
 $(eval $(file <$(INCLUDE_DIR)/reset_info.mk))
 
 endef

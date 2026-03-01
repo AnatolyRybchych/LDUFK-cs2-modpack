@@ -2,7 +2,7 @@
 NAME=CounterStrikeSharp
 VERSION=1.0.363
 UNPACK=zip
-DEPENDS=
+DEPENDS=Metamod
 URL=https://github.com/roflmuffin/CounterStrikeSharp/releases/download/v$(VERSION)/counterstrikesharp-linux-$(VERSION).zip
 
 define Install
