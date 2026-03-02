@@ -11,8 +11,7 @@ export BUILD_DIR=$(TOPDIR)/build
 define PopulateLayer
 $(info $(MAKE) -C layers info 'LAYER=$(1)' $(MAKEFLAGS))
 $(shell $(MAKE) -C layers info 'LAYER=$(1)' $(MAKEFLAGS) >/dev/null 2>&1)
-
-$(eval $(file <$(BUILD_DIR)/$(1).info))
+$(eval $(file <$(BUILD_DIR)/.info/$(1).info))
 $(eval export Layer/$(NAME)=$(1))
 $(eval export Layer/$(1)/Name=$(NAME))
 $(eval export Layer/$(1)/Version=$(VERSION))
@@ -45,7 +44,7 @@ $(foreach layer,$(LAYERS), \
 	$(eval Layer/$(layer)/AllDepend=$(filter-out $(Layer/$(layer)/Name),$(shell echo $(call RequrDep,$(layer)) | xargs -n1 | sort -u | xargs))))
 
 $(foreach layer,$(LAYERS), \
-	$(eval Layer/$(layer)/Index=$(shell echo $(Layer/$(layer)/AllDepend) | wc -w | xargs printf '%1d%03d' "$(Layer/$(layer)/Order)")))
+	$(eval Layer/$(layer)/Index=$(shell echo 0 $(Layer/$(layer)/AllDepend) | wc -w | xargs printf '%1d%03d' "$(Layer/$(layer)/Order)")))
 
 $(foreach layer,$(LAYERS), \
 	$(eval $(call AssertEmpty,Some $(Layer/$(layer)/Name) dependencies have ORDER >= $(Layer/$(layer)/Order),\
@@ -53,8 +52,13 @@ $(foreach layer,$(LAYERS), \
 
 all: install
 
+cleanall: clean
+	rm -rf build dl
+
 clean:
-	rm -rf build dl overlay
+	rm -rf build/.info/* overlay
+	rm -rf build/.mark/*.unpack
+	rm -rf build/.mark/*.compile
 
 $(foreach layer,$(LAYERS), \
 	$(eval $(call DefineLayer,$(layer))))
@@ -65,9 +69,14 @@ install: install_layers
 	rm -rf "$(TOPDIR)/overlay"
 	mkdir -p "$(TOPDIR)/overlay"
 	$(foreach layer_files,$(sort $(foreach layer,$(LAYERS),$(call InstallDest,$(layer)))), \
-		cp -rf "$(layer_files)"/* "$(TOPDIR)/overlay";$(NL))
+		$(if $(wildcard $(layer_files)/*),cp -rf "$(layer_files)"/* "$(TOPDIR)/overlay";$(NL),))
+
+rebuild:
+	rm -rf $(BUILD_DIR)/.mark/*.unpack
+	rm -rf $(BUILD_DIR)/.mark/*.compile
+	$(MAKE) $(MAKEFLAGS)
 
 download: $(foreach layer,$(LAYERS),download/$(layer))
 
-.PHONY: all clean download install clean_install overlay \
+.PHONY: all cleanall download install clean_install overlay rebuild \
 	$(foreach layer,$(LAYERS),install/$(layer))

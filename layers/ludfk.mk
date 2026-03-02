@@ -1,6 +1,6 @@
 NAME=ldufk
 VERSION=0.0.0
-DIRECTORY=ldufk
+URL=file://$(TOPDIR)/ldufk
 DEPENDS=CounterStrikeSharp MatchZy
 ORDER=1
 

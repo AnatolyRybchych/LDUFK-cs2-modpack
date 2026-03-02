@@ -12,6 +12,10 @@ define Unpack/cp
 	rm -rf "$(1)" && cp -rf "$(2)/$(UNPACKED_DIR)" "$(1)"
 endef
 
+define Unpack/none
+	echo "Unpack is skipped"
+endef
+
 define UnpackArchive
 	$(call Unpack/$(1),$(2),$(3))
 endef
