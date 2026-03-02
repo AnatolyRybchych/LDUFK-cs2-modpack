@@ -12,21 +12,26 @@ ifeq ($(VERSION),)
 $(error Missing required parameter VERSION for the layer $(LAYER))
 endif
 
+ORDER:=$(if $(ORDER),$(ORDER),0)
+ifeq ($(shell echo $$(($(ORDER) >= 0 && $(ORDER) <= 9))),0)
+$(error ORDER should be in range [0; 9])
+endif
+
 define LayerInfo
 NAME=$(NAME)
 VERSION=$(VERSION)
 DEPENDS=$(DEPENDS)
+ORDER=$(ORDER)
 endef
 
 SOURCES=$(BUILD_DIR)/$(NAME)-$(VERSION)
-INSTALL_DIR=$(BUILD_DIR)/$(NAME)-$(VERSION)-install
 
 MarkFile=$(SOURCES).$(1)
 
 info:
 	@:
 	$(shell mkdir -p "$(BUILD_DIR)")
-	$(file >$(BUILD_DIR)/$(LAYER).info,$(call LayerInfo))
+	$(file >$(BUILD_DIR)/$(LAYER).info,$(LayerInfo))
 
 download: $(call MarkFile,download)
 
@@ -54,8 +59,8 @@ $(call MarkFile,compile): unpack
 	mkdir -p "$(dir $@)" && touch "$@"
 
 install: compile
-	@rm -rf "$(INSTALL_DIR)"
-	@mkdir -p "$(INSTALL_DIR)"
-	$(call Install,$(INSTALL_DIR))
+	@rm -rf "$(DEST)"
+	@mkdir -p "$(DEST)"
+	$(call Install,$(DEST))
 
 .PHONY: install unpack info download compile
