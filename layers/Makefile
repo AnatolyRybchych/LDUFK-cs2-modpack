@@ -52,19 +52,20 @@ ORDER=$(ORDER)
 endef
 
 MarkFile=$(BUILD_DIR)/.mark/$(NAME)-$(VERSION).$(1)
+MarkDlFile=$(DL_DIR)/.mark/$(NAME)-$(VERSION).$(1)
 
 info:
 	@:
 	$(shell mkdir -p "$(BUILD_DIR)/.info")
 	$(file >$(BUILD_DIR)/.info/$(LAYER).info,$(LayerInfo))
 
-download: $(call MarkFile,download)
-$(call MarkFile,download):
+download: $(call MarkDlFile,download)
+$(call MarkDlFile,download):
 	$(call Download,$(DOWNLOAD),$(URL),$(DL_PATH))
 	mkdir -p "$(dir $@)" && touch "$@"
 
 unpack: $(call MarkFile,unpack)
-$(call MarkFile,unpack): $(call MarkFile,download)
+$(call MarkFile,unpack): $(call MarkDlFile,download)
 	$(call UnpackArchive,$(UNPACK),$(SOURCES),$(DL_PATH))
 	mkdir -p "$(dir $@)" && touch "$@"
 

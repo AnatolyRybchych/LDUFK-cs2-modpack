@@ -53,12 +53,10 @@ $(foreach layer,$(LAYERS), \
 all: install
 
 cleanall: clean
-	rm -rf build dl
+	find dl/ -mindepth 1 -delete
 
 clean:
-	rm -rf build/.info/* overlay
-	rm -rf build/.mark/*.unpack
-	rm -rf build/.mark/*.compile
+	find build/ overlay/ -mindepth 1 -delete
 
 $(foreach layer,$(LAYERS), \
 	$(eval $(call DefineLayer,$(layer))))

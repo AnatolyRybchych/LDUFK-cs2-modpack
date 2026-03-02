@@ -1,7 +1,7 @@
 
 
 define Download/curl
-	rm -rf "$(2)" && mkdir -p "$(dir $(2))" && curl -L --fail "$(1)" > "$(2)"
+	rm -rf "$(2)" && mkdir -p "$(dir $(2))" && curl --retry 5 --retry-delay 5  -L --fail "$(1)" > "$(2)"
 endef
 
 define Download/git
