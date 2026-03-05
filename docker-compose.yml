@@ -11,7 +11,8 @@ services:
       - sh
       - -c
       - |
-        set -x
+        set -xe
+
         if [ "$OVERLAY_CLEAN_BUILD" ]; then
             make cleanall
         elif [ "$OVERLAY_REBUILD" ]; then

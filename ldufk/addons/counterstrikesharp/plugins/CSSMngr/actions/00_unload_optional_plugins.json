@@ -1,0 +1,10 @@
+{
+    "event": "map.loaded",
+    "if": {},
+    "do": [
+        {
+            "action": "command",
+            "params": {"command": "css_plugins unload CS2Multi1v1"}
+        }
+    ]
+}

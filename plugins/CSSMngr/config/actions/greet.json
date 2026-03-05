@@ -1,0 +1,12 @@
+{
+    "event": "command",
+    "if": {
+        "command": "hi"
+    },
+    "do": {
+        "action": "chat.print",
+        "params": {
+            "message": "hey there"
+        }
+    }
+}
