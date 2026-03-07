@@ -4,6 +4,10 @@
     "do": [
         {
             "action": "command",
+            "params": {"command": "css_plugins unload MatchZy"}
+        },
+        {
+            "action": "command",
             "params": {"command": "css_plugins unload CS2Multi1v1"}
         }
     ]

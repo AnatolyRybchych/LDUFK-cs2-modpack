@@ -1,0 +1,12 @@
+{
+    "event": "map.loaded",
+    "if": {
+        "map.loaded.name | starts_with duel": "true"
+    },
+    "do": [
+        {
+            "action": "command",
+            "params": {"command": "css_plugins load CS2Multi1v1"}
+        }
+    ]
+}

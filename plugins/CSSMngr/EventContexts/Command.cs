@@ -25,6 +25,7 @@ public class Command: EventContext
     public override Func<string>? StringParam(string parameter) => parameter switch
     {
         "command" => () => cmd!.GetArg(0),
+        "command.args" => () => cmd!.ArgString,
         _ => base.StringParam(parameter),
     };
 }

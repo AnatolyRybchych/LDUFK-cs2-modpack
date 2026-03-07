@@ -1,0 +1,12 @@
+{
+    "event": "command",
+    "if": {
+        "command": "sh"
+    },
+    "do": {
+        "action": "microsh.execute",
+        "params": {
+            "command": "command.args | eval"
+        }
+    }
+}

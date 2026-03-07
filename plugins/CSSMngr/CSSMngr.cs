@@ -16,6 +16,8 @@ public class CSSMngr : BasePlugin
     public override string ModuleAuthor => "Anatolii Rybchych";
     public override string ModuleDescription => "CounterStrikeSharp management plugin";
 
+    MicroSh microSh {get;} = new();
+
     public override void Load(bool hotReload)
     {
         Logger.LogInformation("CSSMngr loaded.");
@@ -31,7 +33,7 @@ public class CSSMngr : BasePlugin
                 AddCommand(command.Name, description ?? command.Name, OnCommand);
 
                 if(description == null)
-                    Logger.LogWarning($"The description is missing for the '{description}'");
+                    Logger.LogWarning($"The description is missing for the '{command.Name}'");
             }
         }
         catch (Exception e)
@@ -39,9 +41,10 @@ public class CSSMngr : BasePlugin
             Logger.LogError($"commands.json: {e}");
         }
 
-        IEnumerable<string> actionFiles = Utils.TryOr(
-            () => Directory.EnumerateFiles($"{ModuleDirectory}/actions/", "*.json"),
+        List<string> actionFiles = Utils.TryOr(
+            () => Directory.EnumerateFiles($"{ModuleDirectory}/actions/", "*.json").ToList(),
             []);
+        actionFiles.Sort();
 
         var listeners = new Dictionary<string, List<ActionDescription>>();
         foreach (var file in actionFiles)
@@ -52,10 +55,14 @@ public class CSSMngr : BasePlugin
                 var json = JsonDocument.Parse(content);
                 ActionDescription description = GenerateActionDescription(json.RootElement);
 
-                if (listeners.ContainsKey(description.eventName))
-                    listeners[description.eventName].Append(description);
-                else
-                    listeners[description.eventName] = [description];
+                if (!listeners.TryGetValue(description.eventName, out var list))
+                {
+                    list = [];
+                    listeners[description.eventName] = list;
+                }
+                list.Add(description);
+
+                Logger.LogInformation($"Loaded {file} action listener");
             }
             catch (Exception e)
             {
@@ -65,12 +72,12 @@ public class CSSMngr : BasePlugin
 
         foreach (var listener in listeners)
         {
-            try
-            {
-                EventContext eventContext = getEventContext(listener.Key);
+            EventContext eventContext = getEventContext(listener.Key);
 
-                List<Action<EventContext>> listToRun = [];
-                foreach (var actionDescription in listener.Value)
+            List<Action<EventContext>> listToRun = [];
+            foreach (var actionDescription in listener.Value)
+            {
+                try
                 {
                     Func<bool> checkCondition = actionDescription.conditionChecker(eventContext);
                     listToRun.Add(ctx =>
@@ -78,18 +85,21 @@ public class CSSMngr : BasePlugin
                         if (checkCondition())
                             actionDescription.action.Execute(ctx);
                     });
-                }
 
-                switch (listener.Key)
+                    Logger.LogInformation($"Initialized {actionDescription.eventName} event");
+                }
+                catch (Exception e)
                 {
-                    case "map.loaded": mapLoaded.Handlers.AddRange(listToRun); break;
-                    case "player.death": playerDeath.Handlers.AddRange(listToRun); break;
-                    case "command": command.Handlers.AddRange(listToRun); break;
+                    Logger.LogError($"{e}");
                 }
             }
-            catch (Exception e)
+
+            switch (listener.Key)
             {
-                Logger.LogError($"{e}");
+                case "map.loaded": mapLoaded.Handlers.AddRange(listToRun); break;
+                case "player.death": playerDeath.Handlers.AddRange(listToRun); break;
+                case "command": command.Handlers.AddRange(listToRun); break;
+                default: Logger.LogError($"Invalid event {listener.Key}"); break;
             }
         }
 
@@ -145,6 +155,7 @@ public class CSSMngr : BasePlugin
             return actionName switch
             {
                 "chat.print" => (Action)new Actions.Print(json.GetProperty("params")),
+                "microsh.execute" => (Action)new Actions.Sh(json.GetProperty("params")),
                 "command" => (Action)new Actions.Command(json.GetProperty("params")),
                 _ => throw new Exception($"The action '{actionName}' is not defined")
             };
@@ -164,10 +175,9 @@ public class CSSMngr : BasePlugin
             List<Func<bool>> conditions= [];
             foreach (var condition in conditionDescriptions.EnumerateObject())
             {
-                Func<string> propGetter = eventContext.ToStringParam(condition.Name)
-                    ?? throw new Exception($"The '{condition.Name}' condtion cannot be met in '{evt}' event");
-
-                conditions.Add(() => propGetter() == condition.Value.ToString());
+                var microShDispatcher = new CSSMngrMicroShDispatcherProvider(eventContext).getDispatcher();
+                MicroSh.Function expr = microSh.Compile(microShDispatcher, condition.Name);
+                conditions.Add(() => expr("", []) == condition.Value.ToString());
             }
 
             return () => conditions.All((cnd) => cnd());

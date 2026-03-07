@@ -21,4 +21,8 @@ sed -E -i '
 ' "$GI_PATH"
 fi
 
+rm -rf /home/steam/cs2-dedicated/game/csgo/addons/counterstrikesharp
+rm -rf /home/steam/cs2-dedicated/game/csgo/addons/matchup
+rm -rf /home/steam/cs2-dedicated/game/csgo/addons/cfg/MatchZy
+
 cp -rf /overlay/* /home/steam/cs2-dedicated/game/csgo/
