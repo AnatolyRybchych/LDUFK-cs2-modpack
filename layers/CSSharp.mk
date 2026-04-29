@@ -1,6 +1,6 @@
 
 NAME=CounterStrikeSharp
-VERSION=1.0.357
+VERSION=1.0.367
 UNPACK=zip
 DEPENDS=Metamod
 

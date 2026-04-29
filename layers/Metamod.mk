@@ -1,9 +1,10 @@
 
 NAME=Metamod
 VERSION=2.0.0
+BUILD=1398
 UNPACK=tar
 DEPENDS=
-URL=https://mms.alliedmods.net/mmsdrop/2.0/mmsource-2.0.0-git1387-linux.tar.gz
+URL=https://github.com/alliedmodders/metamod-source/releases/download/$(VERSION).$(BUILD)/mmsource-2.0.0-git$(BUILD)-linux.tar.gz
 
 define Install
 	cp -rn "$(SOURCES)"/* "$(1)"
